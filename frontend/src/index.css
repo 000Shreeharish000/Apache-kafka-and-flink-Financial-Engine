@@ -1,0 +1,264 @@
+/* 
+  STRICT MONOCHROME FULL-PAGE TERMINAL DESIGN
+  Color 1: Pitch Dark (#000000 / #0a0a0a)
+  Color 2: Dark Grid Divider (#222222 / #333333)
+  Text: Pure White (#ffffff)
+  Edges: Sharp 0px (No curved boxes)
+*/
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: 0 !important;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  background-color: #050505;
+  color: #ffffff;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, monospace, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Base Full Page Layout */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #050505;
+  color: #ffffff;
+  padding: 16px;
+  gap: 12px;
+}
+
+/* Header Grid */
+.header-panel {
+  border: 1px solid #262626;
+  background-color: #0d0d0d;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.header-title h1 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.header-subtitle {
+  font-size: 12px;
+  color: #888888;
+  margin-top: 4px;
+}
+
+.header-stats {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #888888;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: monospace;
+  color: #ffffff;
+}
+
+/* Pipeline Flow Bar */
+.pipeline-panel {
+  border: 1px solid #262626;
+  background-color: #0a0a0a;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.pipeline-nodes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pipeline-node {
+  border: 1px solid #333333;
+  padding: 4px 10px;
+  background-color: #121212;
+  color: #ffffff;
+}
+
+.pipeline-arrow {
+  color: #666666;
+}
+
+/* Main Grid Layout */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex: 1;
+}
+
+@media (max-width: 1024px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Section Box */
+.section-box {
+  border: 1px solid #262626;
+  background-color: #0d0d0d;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.section-header {
+  border-bottom: 1px solid #222222;
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #ffffff;
+}
+
+/* Market Summary Cards inside Section */
+.market-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.summary-card {
+  border: 1px solid #222222;
+  background-color: #050505;
+  padding: 12px;
+}
+
+.summary-card-title {
+  font-size: 10px;
+  color: #888888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.summary-card-val {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+/* Sharp Monochrome Table */
+.data-table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: monospace;
+  font-size: 12px;
+  text-align: left;
+}
+
+.data-table th {
+  border-bottom: 2px solid #333333;
+  padding: 10px 8px;
+  color: #888888;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.data-table td {
+  border-bottom: 1px solid #1a1a1a;
+  padding: 10px 8px;
+  color: #ffffff;
+}
+
+.data-table tr.selected {
+  background-color: #1a1a1a;
+}
+
+.data-table tr:hover {
+  background-color: #141414;
+  cursor: pointer;
+}
+
+/* Signal Badges */
+.badge-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid #444444;
+  font-size: 11px;
+  font-weight: 700;
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* SVG Chart Container */
+.chart-container {
+  width: 100%;
+  height: 260px;
+  border: 1px solid #222222;
+  background-color: #050505;
+  padding: 10px;
+  position: relative;
+}
+
+/* Terminal Log Panel */
+.log-panel {
+  border: 1px solid #262626;
+  background-color: #080808;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 11px;
+  height: 180px;
+  overflow-y: auto;
+  color: #cccccc;
+}
+
+.log-line {
+  padding: 3px 0;
+  border-bottom: 1px solid #141414;
+}
+
+.log-time {
+  color: #666666;
+  margin-right: 8px;
+}

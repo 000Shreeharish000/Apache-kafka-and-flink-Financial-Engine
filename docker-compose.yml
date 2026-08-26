@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  # 1. Apache Kafka Broker (KRaft Mode)
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka_broker
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9094'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,PLAINTEXT_HOST://:9094'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # 2. TimescaleDB (PostgreSQL 16 Time-Series Storage)
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: timescaledb_database
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: market_intelligence
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d market_intelligence"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # 3. Market Data Simulator (Kafka Producer)
+  simulator:
+    build:
+      context: ./kafka/producer
+    container_name: market_simulator
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: market_ticks
+      TICK_INTERVAL_SEC: 0.5
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  # 4. Apache Flink Streaming Engine Process
+  flink-engine:
+    build:
+      context: ./flink
+    container_name: flink_stream_engine
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: market_ticks
+      POSTGRES_HOST: timescaledb
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: market_intelligence
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    depends_on:
+      kafka:
+        condition: service_healthy
+      timescaledb:
+        condition: service_healthy
+
+  # 5. FastAPI Backend & WebSockets
+  backend:
+    build:
+      context: ./backend
+    container_name: fastapi_backend
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_HOST: timescaledb
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: market_intelligence
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      WEBSOCKET_BROADCAST_INTERVAL_MS: 500
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+
+  # 6. React Dashboard (Nginx Proxy)
+  frontend:
+    build:
+      context: ./frontend
+    container_name: react_dashboard
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
