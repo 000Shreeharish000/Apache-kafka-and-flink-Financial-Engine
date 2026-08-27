@@ -1,13 +1,13 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from typing import List, Dict, Any
-import asyncpg
-from app.database import pool
+import app.database as db
 
 router = APIRouter()
 
 @router.get("/health")
 async def health_check():
     """System health check endpoint."""
+    pool = db.get_pool()
     if not pool:
         return {"status": "error", "database": "disconnected"}
     try:
@@ -28,6 +28,7 @@ async def health_check():
 @router.get("/market/latest")
 async def get_latest_market_signals() -> List[Dict[str, Any]]:
     """Returns the latest state for all symbols."""
+    pool = db.get_pool()
     if not pool:
         raise HTTPException(status_code=503, detail="Database pool not initialized")
 
@@ -57,6 +58,7 @@ async def get_latest_market_signals() -> List[Dict[str, Any]]:
 @router.get("/market/state")
 async def get_market_state() -> Dict[str, Any]:
     """Returns the current aggregated market state and confidence score."""
+    pool = db.get_pool()
     if not pool:
         raise HTTPException(status_code=503, detail="Database pool not initialized")
 
@@ -89,6 +91,7 @@ async def get_market_state() -> Dict[str, Any]:
 @router.get("/market/{symbol}")
 async def get_symbol_history(symbol: str, limit: int = 50) -> List[Dict[str, Any]]:
     """Returns recent processed observations for a specific symbol."""
+    pool = db.get_pool()
     if not pool:
         raise HTTPException(status_code=503, detail="Database pool not initialized")
 
@@ -101,7 +104,6 @@ async def get_symbol_history(symbol: str, limit: int = 50) -> List[Dict[str, Any
     """
     async with pool.acquire() as conn:
         rows = await conn.fetch(query, symbol, limit)
-        # Reverse so records are chronological ASC for chart display
         result = []
         for r in reversed(rows):
             result.append({

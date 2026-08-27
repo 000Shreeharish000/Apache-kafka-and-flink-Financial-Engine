@@ -3,21 +3,19 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import router as api_router
-from app.database import init_db_pool, close_db_pool, pool
+from app.database import init_db_pool, close_db_pool, get_pool
 from app.websocket.manager import manager as ws_manager
 from app.config import WEBSOCKET_BROADCAST_INTERVAL_MS
 
-last_broadcast_time = None
-
 async def broadcast_loop():
     """Background task to fetch latest DB signals and push via WebSocket."""
-    global last_broadcast_time
     print("[WEBSOCKET BROADCASTER] Broadcaster loop started.")
     
     while True:
         try:
             await asyncio.sleep(WEBSOCKET_BROADCAST_INTERVAL_MS / 1000.0)
 
+            pool = get_pool()
             if not ws_manager.active_connections or not pool:
                 continue
 
@@ -69,7 +67,6 @@ async def broadcast_loop():
                 }
 
                 await ws_manager.broadcast(payload)
-                # print("[WEBSOCKET BROADCASTER] Pushed streaming tick payload.")
 
         except Exception as e:
             print(f"[WEBSOCKET BROADCASTER] Broadcast loop exception: {e}")
@@ -91,7 +88,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Enable CORS for local dev / dashboard
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -107,9 +103,7 @@ async def websocket_market_endpoint(websocket: WebSocket):
     await ws_manager.connect(websocket)
     try:
         while True:
-            # Keep connection open & listen for client messages (heartbeat/ping)
             data = await websocket.receive_text()
-            # echo back or process ping
             await websocket.send_text(f'{{"type": "pong", "client_msg": "{data}"}}')
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket)

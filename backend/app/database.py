@@ -25,13 +25,12 @@ async def init_db_pool():
             await asyncio.sleep(2)
     raise Exception("Failed to connect to TimescaleDB pool")
 
+def get_pool():
+    global pool
+    return pool
+
 async def close_db_pool():
     global pool
     if pool:
         await pool.close()
         print("[FASTAPI DB] Closed TimescaleDB connection pool")
-
-async def get_db():
-    global pool
-    async with pool.acquire() as connection:
-        yield connection

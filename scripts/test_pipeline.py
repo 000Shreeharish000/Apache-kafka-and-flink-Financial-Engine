@@ -5,8 +5,8 @@ import urllib.request
 import websockets
 import asyncio
 
-API_BASE = "http://localhost:8000/api"
-WS_URL = "ws://localhost:8000/ws/market"
+API_BASE = "http://localhost:8001/api"
+WS_URL = "ws://localhost:8001/ws/market"
 
 def log_test(step_num, title, status, details=""):
     symbol = "PASS" if status else "FAIL"
@@ -77,8 +77,7 @@ async def test_symbol_history():
 
 async def test_websocket_stream():
     try:
-        async with websockets.connect(WS_URL, timeout=5) as websocket:
-            # Wait for streaming payload broadcast
+        async with websockets.connect(WS_URL) as websocket:
             message = await asyncio.wait_for(websocket.recv(), timeout=5.0)
             data = json.loads(message)
             if data.get("type") == "market_update" and "signals" in data:

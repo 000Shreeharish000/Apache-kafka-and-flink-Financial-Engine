@@ -34,7 +34,7 @@ services:
     image: timescale/timescaledb:latest-pg16
     container_name: timescaledb_database
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_DB: market_intelligence
       POSTGRES_USER: postgres
@@ -85,7 +85,7 @@ services:
       context: ./backend
     container_name: fastapi_backend
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       POSTGRES_HOST: timescaledb
       POSTGRES_PORT: 5432
