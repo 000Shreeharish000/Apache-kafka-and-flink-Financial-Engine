@@ -6,7 +6,7 @@ Inspired by Finflock / InstaStocks market-state engines, this system demonstrate
 
 ---
 
-## 1. Architecture Diagram
+## Architecture Diagram
 
 ```
                     Market Simulator (Python)
